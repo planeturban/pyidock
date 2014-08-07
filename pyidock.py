@@ -56,16 +56,6 @@ class PyiDock:
             count -= 1
         self.queue.update({cmd: count})
 
-
-    def to_hex(self, s):
-        lst = []
-        for ch in s:
-            hv = hex(ord(ch)).replace('0x', '')
-            if len(hv) == 1:
-                hv = '0'+hv
-            lst.append(hv)
-        return reduce(lambda x,y:x+y, lst)
-
     def int_to_hex_str(self, x, length=4):
         if x > 4294967295:  # Boy, do you have a large library!
             x = 4294967295  # Probably redundant..
@@ -79,10 +69,10 @@ class PyiDock:
             if self.serial.read(2) == "ff55".decode("hex"):
                 length = self.serial.read(1)
                 lingo = self.serial.read()
-                body = self.serial.read(int(self.to_hex(length), 16)-1)
+                body = self.serial.read(int(length.encode('hex'), 16)-1)
                 checksum = self.serial.read()
                 message = "ff55".decode("hex") + length + lingo + body + checksum
-                if self.mkcmd(int(self.to_hex(lingo)), self.to_hex(body)) == message:  # Valid response?
+                if self.mkcmd(int(lingo.encode('hex')), body.encode('hex')) == message:  # Valid response?
                     if message.startswith("ff5507040027".decode("hex")):  # if we're in pulling mode.
                         self.timedata = message
                     else:

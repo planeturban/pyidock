@@ -1,8 +1,8 @@
 import serial
 from time import sleep
 
-
 class PyiDock:
+
     """ Class for controlling iPod """
     def __init__(self, serialport = "/dev/tty.usbserial", serialspeed = 19200, timeout = 1):
         self.serialPort = serialport
@@ -13,6 +13,8 @@ class PyiDock:
 
     def connect(self):
         self.serial = serial.Serial(self.serialPort, baudrate=self.serialSpeed, timeout=self.timeout)
+        sleep(1)
+        self.serial.write(self.mkcmd(0, "0104")) # Enable AIR
 
     def disconnect(self):
         self.serial.close()
@@ -88,6 +90,7 @@ class PyiDock:
                             ret = ret + (body,)
                         else:
                             ret = ret +  (message, )
+                    return ret
 
     def get_ipod_type(self):
         cmd = self.mkcmd(4, "0012")

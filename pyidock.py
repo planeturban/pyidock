@@ -1,6 +1,7 @@
 import serial
 from time import sleep
 
+
 class PyiDock:
 
     """ Class for controlling iPod """
@@ -15,9 +16,14 @@ class PyiDock:
         self.serial = serial.Serial(self.serialPort, baudrate=self.serialSpeed, timeout=self.timeout)
         sleep(1)
         self.serial.write(self.mkcmd(0, "0104")) # Enable AIR
+        self.flush()
 
     def disconnect(self):
         self.serial.close()
+
+    def func_name(self):
+        import traceback
+        return traceback.extract_stack(None, 2)[0][2]
 
     def mkcmd(self, lingo, s):
         s = s.decode("hex")
@@ -63,8 +69,8 @@ class PyiDock:
         return hex(x).split("x")[1].zfill(length)
 
     def read_response(self, fullmessage=False):
-        ret = ()
-        sleep(.15) # need to wait a while, just in case..
+        ret = []
+        sleep(.1) # need to wait a while, just in case..
         while self.serial.inWaiting():
             if self.serial.read(2) == "ff55".decode("hex"):
                 length = self.serial.read(1)
@@ -73,21 +79,56 @@ class PyiDock:
                 checksum = self.serial.read()
                 message = "ff55".decode("hex") + length + lingo + body + checksum
                 if self.mkcmd(int(lingo.encode('hex')), body.encode('hex')) == message:  # Valid response?
-                    if message.startswith("ff5507040027".decode("hex")):  # if we're in pulling mode.
+                    if message.startswith("ff5508040027".decode("hex")):  # if we're in pulling mode.
                         self.timedata = message
                     else:
                         if not fullmessage:
-                            ret = ret + (body,)
+                            ret.append(body)
                         else:
-                            ret = ret +  (message, )
-                    return ret
+                            ret = ret.append(message)
+        return ret
+
+    def strip_response(self, msg):
+        return msg[2:]
+
+    def get_response(self, cmd):
+        ret = ""
+        data = self.read_response()
+        responses = {'get_ipod_name': '0015',
+                 'get_type_count': '0019',
+                 'get_type_range': '001b',
+                 'get_time_and_status': '001d',
+                 'get_playlist_position': '001f',
+                 'get_song_title': '0021',
+                 'get_song_artist': '0023',
+                 'get_song_album': '0025',
+                 'get_time_current_song': '0027',
+                 'get_shuffle': '002d',
+                 'get_repeat': '0030',
+                 'get_playlist_songs': '0036'}
+        if ( type(cmd) is str):
+            cmd = responses[cmd]
+        elif (type(cmd) is int):
+            cmd = self.int_to_hex_str(cmd, 2)
+        elif (type(cmd) is hex):
+            cmd = "00" + cmd
+        for response in data:
+            if ( response[:2].encode('hex') == cmd):
+                ret = response[2:]
+                break
+        return ret
 
     def get_ipod_type(self):
         cmd = self.mkcmd(4, "0012")
         self.serial.write(cmd)
 
     def get_ipod_name(self):
+        self.flush()
         self.serial.write(self.mkcmd(4, "0014"))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name())[:-1]
+        return ret
 
     def set_playlist_to_all(self):
         self.serial.write(self.mkcmd(4, "0016"))
@@ -96,26 +137,53 @@ class PyiDock:
         self.serial.write(self.mkcmd(4, "0017" + self.int_to_hex_str(itemtype, 1) + self.int_to_hex_str(number)))
 
     def get_type_count(self, itemtype=0):
+        self.flush()
         self.serial.write(self.mkcmd(4, "0018" + self.int_to_hex_str(itemtype,1)))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name()).encode("hex")
+        return int(ret,16)
 
     def get_type_range(self, itemtype=0, count=0, offset=0):
         self.serial.write(self.mkcmd(4, "001A" + self.int_to_hex_str(itemtype, 1) + self.int_to_hex_str(offset) +
                                    self.int_to_hex_str(count)))
 
     def get_time_and_status(self):
+        self.flush()
         self.serial.write(self.mkcmd(4, "001C"))
 
     def get_playlist_position(self):
+        self.flush()
         self.serial.write(self.mkcmd(4, "001E"))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name()).encode("hex")
+        return int(ret,16)
 
     def get_song_title(self, song=0):
+        self.flush()
         self.serial.write(self.mkcmd(4, "0020" + self.int_to_hex_str(song)))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name())[:-1]
+        return ret
 
     def get_song_artist(self, song=0):
+        self.flush()
         self.serial.write(self.mkcmd(4, "0022" + self.int_to_hex_str(song)))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name())[:-1]
+        return ret
+
 
     def get_song_album(self, song=0):
+        self.flush()
         self.serial.write(self.mkcmd(4, "0024" + self.int_to_hex_str(song)))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name())[:-1]
+        return ret
 
     def set_pulling_mode(self, mode=True):
         if mode:
@@ -131,31 +199,43 @@ class PyiDock:
         self.flush()  # Let's clear the serial data...
         self.timedata = ""
         self.set_pulling_mode(False)
-        self.serial.write(self.mkcmd(4, "0029" + self.int_to_hex_str(cmd, 1)))
+        cmd = self.mkcmd(4, "0029" + self.int_to_hex_str(cmd, 1))
+        self.serial.write(cmd)
 
     def play(self):
-        self.serial.write(self.raw_control())
+        self.raw_control()
 
     def pause(self):
-        self.serial.write(self.raw_control(2))
+        self.raw_control(2)
 
     def skip_forward(self):
-        self.serial.write(self.raw_control(3))
+        self.raw_control(3)
 
     def skip_backwards(self):
-        self.serial.write(self.raw_control(4))
+        self.raw_control(4)
 
     def forward(self):
-        self.serial.write(self.raw_control(5))
+        self.raw_control(5)
 
     def reverse(self):
-        self.serial.write(self.raw_control(6))
+        self.raw_control(6)
 
     def stop_fr(self):
-        self.serial.write(self.raw_control(7))
+        self.raw_control(7)
 
     def get_shuffle(self):
+        self.flush()
         self.serial.write(self.mkcmd(4, "002c"))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name()).encode("hex")
+        if ( ret == 1 ):
+            ret = "songs"
+        elif ( ret == 2):
+            ret = "albums"
+        else:
+            ret = "off"
+        return ret
 
     def set_shuffle(self, mode="songs"):
         if mode.lower() == "off":
@@ -167,7 +247,18 @@ class PyiDock:
         self.serial.write(self.mkcmd(4, self.int_to_hex_str(cmd, 1)))
 
     def get_repeat(self):
+        self.flush()
         self.serial.write(self.mkcmd(4, "002f"))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name()).encode("hex")
+        if ( ret == 1 ):
+            ret = "one"
+        elif ( ret == 2):
+            ret = "all"
+        else:
+            ret = "off"
+        return ret
 
     def set_repeat(self, mode="one"):
         if mode.lower() == "off":
@@ -184,4 +275,5 @@ class PyiDock:
     def set_song_in_playlist(self, song=0):
         self.serial.write(self.mkcmd(4, "0037" + self.int_to_hex_str(song)))
 
-    
+
+

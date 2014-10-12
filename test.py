@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-""" Tests for PyiDock.
+"""
+Tests for PyiDock.
 """
 
 from pyidock import PyiDock
@@ -32,6 +33,16 @@ def printstatus():
     start = time.time();
     playlists = dock.get_type_count(1)
     print "Playlists:% 9d (%f)" % (playlists, (time.time() - start))
+    pls = []
+    start = time.time();
+    for i in range(0, playlists , 1):
+        pls.append(dock.get_type_range(1, 1, i))
+    end = time.time() - start;
+    i = 0;
+    for pl in pls:
+        print "           [%d] %s" % (i, pl)
+        i += 1
+    print "           (%f)" % end
     start = time.time();
     genres = dock.get_type_count(4)
     print "Genres:% 12d (%f)" % (genres, (time.time() - start))
@@ -50,25 +61,27 @@ def printstatus():
     print "State:% 13s (%f)" % (status['status'], (time.time() - start))
     print "----------------"
     start = time.time();
-    pos = dock.get_playlist_position()
-    song = dock.get_song_title(pos)
-    print "Song:     %-48s (%f)" % (song, (time.time() - start))
-    print "    : %s/%s" % (status['positiontime'], status['lengthtime'])
-    start = time.time();
-    position = dock.get_playlist_position()
-    print "Position: % -48d (%f)" % (position, (time.time() - start))
-    start = time.time();
-    artist = dock.get_song_artist(pos)
-    print "Artist:   %-48s (%f)" % (artist, (time.time() - start))
-    start = time.time();
-    album = dock.get_song_album(pos)
-    print "Album:    %-48s (%f)" % (album, (time.time() - start))
+    if status['status'] != "stop": # can't get playlist if stopped.
+        pos = dock.get_playlist_position()
+        song = dock.get_song_title(pos)
+        print "Song:     %-48s (%f)" % (song, (time.time() - start))
+        print "          %s/%s" % (status['positiontime'], status['lengthtime'])
+        start = time.time();
+        position = dock.get_playlist_position()
+        print "Position:% -48d (%f)" % (position, (time.time() - start))
+        start = time.time();
+        artist = dock.get_song_artist(pos)
+        print "Artist:   %-48s (%f)" % (artist, (time.time() - start))
+        start = time.time();
+        album = dock.get_song_album(pos)
+        print "Album:    %-48s (%f)" % (album, (time.time() - start))
 
-
-
-dock.set_playlist_to_all()
-dock.set_shuffle("albums")
+#dock.set_playlist_to_all()
+dock.switch_to_type(1,0)
+dock.execute_playlist_switch()
 execute_time = 0
+
+
 
 while True:
     start = time.time()
@@ -80,7 +93,10 @@ while True:
     system("clear")
     cmd_start = time.time()
     if cmd == "play":
-        dock.play()
+        if dock.get_time_and_status()['status'] == "stop":
+            dock.execute_playlist_switch()
+        else:
+            dock.play()
     if cmd == "pause":
         dock.pause()
     if cmd == "n":
@@ -93,3 +109,5 @@ while True:
         dock.toggle_repeat()
     execute_time = time.time() - cmd_start
     time.sleep(.1)
+
+

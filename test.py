@@ -16,40 +16,54 @@ print "Init done."
 
 def printstatus():
 
+    print "iPod information"
+    start = time.time();
     ipodname = dock.get_ipod_name()
-    playlists = dock.get_type_count(1)
-    artists = dock.get_type_count(2)
-    albums = dock.get_type_count(3)
-    genres = dock.get_type_count(4)
+    print "Name:%14s (%f)" % (ipodname, (time.time() - start))
+    start = time.time();
     songs = dock.get_type_count(5)
-    repeat = dock.get_repeat()
+    print "Songs:% 13d (%f)" % (songs, (time.time() - start))
+    start = time.time();
+    artists = dock.get_type_count(2)
+    print "Artists:% 11d (%f)" % (artists, (time.time() - start))
+    start = time.time();
+    albums = dock.get_type_count(3)
+    print "Albums:% 12d (%f)" % (albums, (time.time() - start))
+    start = time.time();
+    playlists = dock.get_type_count(1)
+    print "Playlists:% 9d (%f)" % (playlists, (time.time() - start))
+    start = time.time();
+    genres = dock.get_type_count(4)
+    print "Genres:% 12d (%f)" % (genres, (time.time() - start))
+    start = time.time();
+    playlistsongs = dock.get_playlist_songs()
+    print "Songs in pl: % 6d (%f)" % (playlistsongs, (time.time() - start))
+    print "----------------"
+    start = time.time();
     shuffle = dock.get_shuffle()
+    print "Shuffle:% 11s (%f)" % (shuffle, (time.time() - start))
+    start = time.time();
+    repeat = dock.get_repeat()
+    print "Repeat:% 12s (%f)" % (repeat, (time.time() - start))
+    start = time.time();
+    status = dock.get_time_and_status()
+    print "State:% 13s (%f)" % (status['status'], (time.time() - start))
+    print "----------------"
+    start = time.time();
     pos = dock.get_playlist_position()
     song = dock.get_song_title(pos)
-    artist = dock.get_song_artist(pos)
-    album = dock.get_song_album(pos)
-    status = dock.get_time_and_status()
-    position = dock.get_playlist_position()
-    playlistsongs = dock.get_playlist_songs()
-
-    print "iPod information"
-    print "Name: % 5s" % ipodname
-    print "Songs:      % 4d" % songs
-    print "Playlists:  % 4d" % playlists
-    print "Artists:    % 4d" % artists
-    print "Albums:     % 4d" % albums
-    print "Genres:     % 4d" % genres
-    print "Songs in pl: % 4d" % playlistsongs
-    print "----------------"
-    print "Shuffle:    % 3s" % shuffle
-    print "Repeat:     % 3s" % repeat
-    print "State:      % 4s" % status['status']
-    print "----------------"
-    print "Song: %s" % song
-    print "Position: %d" % position
+    print "Song:     %-48s (%f)" % (song, (time.time() - start))
     print "    : %s/%s" % (status['positiontime'], status['lengthtime'])
-    print "Artist: %s" % artist
-    print "Album: %s" % album
+    start = time.time();
+    position = dock.get_playlist_position()
+    print "Position: % -48d (%f)" % (position, (time.time() - start))
+    start = time.time();
+    artist = dock.get_song_artist(pos)
+    print "Artist:   %-48s (%f)" % (artist, (time.time() - start))
+    start = time.time();
+    album = dock.get_song_album(pos)
+    print "Album:    %-48s (%f)" % (album, (time.time() - start))
+
 
 
 dock.set_playlist_to_all()
@@ -60,7 +74,7 @@ while True:
     start = time.time()
     printstatus()
     print "Time spent getting info: %f" % (time.time() - start)
-    if ( execute_time):
+    if execute_time:
         print "Time spent executing: %f" % execute_time
     cmd = raw_input("Command: ")
     system("clear")

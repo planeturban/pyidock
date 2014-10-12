@@ -6,19 +6,13 @@
 from pyidock import PyiDock
 import time
 from os import system
-import datetime
-
-
-def read_fifo(filename):
-    while True:
-        with open(filename) as fifo:
-            yield fifo.read()
 
 system("clear")
 print "Init."
 dock = PyiDock()
 dock.connect()
 print "Init done."
+
 
 def printstatus():
 
@@ -45,7 +39,7 @@ def printstatus():
     print "Artists:    % 4d" % artists
     print "Albums:     % 4d" % albums
     print "Genres:     % 4d" % genres
-    print "Songs in pl: % 4d" %playlistsongs
+    print "Songs in pl: % 4d" % playlistsongs
     print "----------------"
     print "Shuffle:    % 3s" % shuffle
     print "Repeat:     % 3s" % repeat

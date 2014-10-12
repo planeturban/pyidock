@@ -1,6 +1,6 @@
 import serial
 from time import sleep
-
+import datetime
 
 class PyiDock:
 
@@ -14,7 +14,6 @@ class PyiDock:
 
     def connect(self):
         self.serial = serial.Serial(self.serialPort, baudrate=self.serialSpeed, timeout=self.timeout)
-        sleep(1)
         self.serial.write(self.mkcmd(0, "0104")) # Enable AIR
         self.flush()
 
@@ -70,7 +69,7 @@ class PyiDock:
 
     def read_response(self, fullmessage=False):
         ret = []
-        sleep(.1) # need to wait a while, just in case..
+#        sleep(.1) # need to wait a while, just in case..
         while self.serial.inWaiting():
             if self.serial.read(2) == "ff55".decode("hex"):
                 length = self.serial.read(1)
@@ -151,6 +150,24 @@ class PyiDock:
     def get_time_and_status(self):
         self.flush()
         self.serial.write(self.mkcmd(4, "001C"))
+        ret = ""
+        while ( not ret ):
+            ret = self.get_response(self.func_name())
+        rawstatus = int(ret[-1:].encode("hex"),16)
+        position = int(ret[4:-1].encode("hex"), 16)
+        length = int(ret[:4].encode("hex"), 16)
+        if ( rawstatus == 1):
+            status = "play"
+        elif ( rawstatus == 2):
+            status = "pause"
+        else:
+            status = "stop"
+        return {'status': status,
+                'length': length,
+                'position': position,
+                'lengthtime': datetime.timedelta(seconds=length/1000),
+                'positiontime': datetime.timedelta(seconds=position/1000),
+                'rawstatus': rawstatus}
 
     def get_playlist_position(self):
         self.flush()
@@ -223,19 +240,28 @@ class PyiDock:
     def stop_fr(self):
         self.raw_control(7)
 
-    def get_shuffle(self):
+    def get_shuffle(self, numeric=False):
         self.flush()
         self.serial.write(self.mkcmd(4, "002c"))
         ret = ""
         while ( not ret ):
             ret = self.get_response(self.func_name()).encode("hex")
-        if ( ret == 1 ):
-            ret = "songs"
-        elif ( ret == 2):
-            ret = "albums"
-        else:
-            ret = "off"
+        ret = int(ret)
+        if ( not numeric):
+            if ( ret == 1 ):
+                ret = "songs"
+            elif ( ret == 2):
+                ret = "albums"
+            else:
+                ret = "off"
         return ret
+
+    def toggle_shuffle(self):
+        state = self.get_shuffle(numeric=True)
+        state += 1
+        if (state > 2):
+            state = 0
+        self.serial.write(self.mkcmd(4, "002e" + self.int_to_hex_str(state, 1)))
 
     def set_shuffle(self, mode="songs"):
         if mode.lower() == "off":
@@ -252,9 +278,9 @@ class PyiDock:
         ret = ""
         while ( not ret ):
             ret = self.get_response(self.func_name()).encode("hex")
-        if ( ret == 1 ):
+        if ret == 1:
             ret = "one"
-        elif ( ret == 2):
+        elif ret == 2:
             ret = "all"
         else:
             ret = "off"

@@ -53,6 +53,7 @@ class PyiDock:
         count += 1
         self.queue.update({cmd: count})
 
+
     def dequeue(self, cmd):
         count = 0
         if self.queue.has_key(cmd):
@@ -69,7 +70,6 @@ class PyiDock:
 
     def read_response(self, fullmessage=False):
         ret = []
-#        sleep(.1) # need to wait a while, just in case..
         while self.serial.inWaiting():
             if self.serial.read(2) == "ff55".decode("hex"):
                 length = self.serial.read(1)
@@ -247,7 +247,7 @@ class PyiDock:
         while ( not ret ):
             ret = self.get_response(self.func_name()).encode("hex")
         ret = int(ret)
-        if ( not numeric):
+        if not numeric:
             if ( ret == 1 ):
                 ret = "songs"
             elif ( ret == 2):
@@ -259,40 +259,55 @@ class PyiDock:
     def toggle_shuffle(self):
         state = self.get_shuffle(numeric=True)
         state += 1
-        if (state > 2):
+        if state > 2:
             state = 0
-        self.serial.write(self.mkcmd(4, "002e" + self.int_to_hex_str(state, 1)))
+        self.set_shuffle(state)
 
     def set_shuffle(self, mode="songs"):
-        if mode.lower() == "off":
-            cmd = 0
-        if mode.lower() == "songs":
-            cmd = 1
-        if mode.lower() == "albums":
-            cmd = 2
-        self.serial.write(self.mkcmd(4, self.int_to_hex_str(cmd, 1)))
+        if type(mode) is str:
+            if mode.lower() == "off":
+                cmd = 0
+            if mode.lower() == "songs":
+                cmd = 1
+            if mode.lower() == "albums":
+                cmd = 2
+        else:
+            cmd = mode
+        self.serial.write(self.mkcmd(4, "002e" + self.int_to_hex_str(cmd, 1)))
 
-    def get_repeat(self):
+    def get_repeat(self, numeric=False):
         self.flush()
         self.serial.write(self.mkcmd(4, "002f"))
         ret = ""
         while ( not ret ):
             ret = self.get_response(self.func_name()).encode("hex")
-        if ret == 1:
-            ret = "one"
-        elif ret == 2:
-            ret = "all"
-        else:
-            ret = "off"
+        ret = int(ret)
+        if not numeric:
+            if ret == 1:
+                ret = "one"
+            elif ret == 2:
+                ret = "all"
+            else:
+                ret = "off"
         return ret
 
+    def toggle_repeat(self):
+        state = self.get_repeat(numeric=True)
+        state += 1
+        if state > 2:
+            state = 0
+        self.set_repeat(state)
+
     def set_repeat(self, mode="one"):
-        if mode.lower() == "off":
-            cmd = 0
-        if mode.lower() == "one":
-            cmd = 1
-        if mode.lower() == "all":
-            cmd = 2
+        if type(mode) is str:
+            if mode.lower() == "off":
+                cmd = 0
+            if mode.lower() == "one":
+                cmd = 1
+            if mode.lower() == "all":
+                cmd = 2
+        else:
+            cmd = mode
         self.serial.write(self.mkcmd(4, "0031" + self.int_to_hex_str(cmd, 1)))
 
     def get_playlist_songs(self):

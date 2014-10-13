@@ -8,12 +8,47 @@ from pyidock import PyiDock
 import time
 from os import system
 
-system("clear")
+#system("clear")
+
 print "Init."
+playlist = []
+artist = []
+album = []
+genre = []
+song = []
+composer = []
+
 dock = PyiDock()
 dock.connect()
-print "Init done."
 
+start = time.time()
+playlists = dock.get_type_count(1)
+artists = dock.get_type_count(2)
+albums = dock.get_type_count(3)
+genres = dock.get_type_count(4)
+songs = dock.get_type_count(5)
+composers = dock.get_type_count(6)
+
+print "Playlists"
+for i in range(0, playlists , 1):
+    playlist.append(dock.get_type_range(1, 1, i))
+print "Artists"
+for i in range(0, artists, 1):
+    artist.append(dock.get_type_range(2, 1, i))
+print "Albums"
+for i in range(0, albums, 1):
+    album.append(dock.get_type_range(3, 1, i))
+print "Genres"
+for i in range(0, genres, 1):
+    genre.append(dock.get_type_range(4, 1, i))
+print "Songs"
+for i in range(0, songs, 1):
+    song.append(dock.get_type_range(5, 1, i))
+
+
+
+print "Init done."
+print "%f" % (time.time() - start)
 
 def printstatus():
 
@@ -77,7 +112,10 @@ def printstatus():
         print "Album:    %-48s (%f)" % (album, (time.time() - start))
 
 #dock.set_playlist_to_all()
-dock.switch_to_type(1,0)
+dock.switch_to_type(1, 0)
+dock.execute_playlist_switch()
+time.sleep(.1)
+dock.switch_to_type(5, 208)
 dock.execute_playlist_switch()
 execute_time = 0
 
@@ -90,7 +128,7 @@ while True:
     if execute_time:
         print "Time spent executing: %f" % execute_time
     cmd = raw_input("Command: ")
-    system("clear")
+#    system("clear")
     cmd_start = time.time()
     if cmd == "play":
         if dock.get_time_and_status()['status'] == "stop":

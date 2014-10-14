@@ -28,7 +28,7 @@ albums = dock.get_type_count(3)
 genres = dock.get_type_count(4)
 songs = dock.get_type_count(5)
 composers = dock.get_type_count(6)
-
+"""
 print "Playlists"
 for i in range(0, playlists , 1):
     playlist.append(dock.get_type_range(1, 1, i))
@@ -44,7 +44,7 @@ for i in range(0, genres, 1):
 print "Songs"
 for i in range(0, songs, 1):
     song.append(dock.get_type_range(5, 1, i))
-
+"""
 
 
 print "Init done."
@@ -111,12 +111,9 @@ def printstatus():
         album = dock.get_song_album(pos)
         print "Album:    %-48s (%f)" % (album, (time.time() - start))
 
-#dock.set_playlist_to_all()
 dock.switch_to_type(1, 0)
-dock.execute_playlist_switch()
 time.sleep(.1)
 dock.switch_to_type(5, 208)
-dock.execute_playlist_switch()
 execute_time = 0
 
 

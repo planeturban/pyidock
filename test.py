@@ -20,6 +20,7 @@ composer = []
 
 dock = PyiDock()
 dock.connect()
+dock.set_playlist_to_all()
 
 start = time.time()
 playlists = dock.get_type_count(1)
@@ -62,6 +63,11 @@ def printstatus():
     start = time.time();
     artists = dock.get_type_count(2)
     print "Artists:% 11d (%f)" % (artists, (time.time() - start))
+    start = time.time();
+    print "Audiobooks:% 12d" % dock.get_type_count(7)
+    print "Podcasts:% 12d" % dock.get_type_count(8)
+    print "9:% 12d" % dock.get_type_count(9)
+
     start = time.time();
     albums = dock.get_type_count(3)
     print "Albums:% 12d (%f)" % (albums, (time.time() - start))
@@ -111,16 +117,15 @@ def printstatus():
         album = dock.get_song_album(pos)
         print "Album:    %-48s (%f)" % (album, (time.time() - start))
 
-dock.switch_to_type(1, 0)
-time.sleep(.1)
-dock.switch_to_type(5, 208)
-execute_time = 0
 
+execute_time = 0
 
 
 while True:
     start = time.time()
     printstatus()
+    print dock.laststatus
+
     print "Time spent getting info: %f" % (time.time() - start)
     if execute_time:
         print "Time spent executing: %f" % execute_time
@@ -142,7 +147,18 @@ while True:
         dock.toggle_shuffle()
     if cmd == "tr":
         dock.toggle_repeat()
+    if cmd == "cl":
+        dock.disconnect()
+        exit()
+    if cmd.startswith("gpd"):
+        dock.goto_podcast(int(cmd.split()[1]))
+    if cmd.startswith("gab"):
+        dock.goto_audiobook(int(cmd.split()[1]))
+    if cmd.startswith("sw"):
+        dock.set_song_in_playlist(int(cmd.split()[1]))
+    if cmd.startswith("gpl"):
+        dock.switch_to_type(1, int(cmd.split()[1]))
+        time.sleep(1)
+        dock.execute_playlist_switch()
     execute_time = time.time() - cmd_start
     time.sleep(.1)
-
-

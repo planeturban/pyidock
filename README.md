@@ -66,5 +66,5 @@ Charging works with 6th gen ipod nano but not 7th gen ipod classic (120GB).
     9: Nested Playlist aka Smart Playlist
     10: Genius Mixes
     11: iTunes U
-Calling `PyiDock.get_type_range(0, PyiDock.get_type_count(0))` will return this list in the language set in in the iPod.
+Calling `PyiDock.get_type_range(0, PyiDock.get_type_count(0))` will return this list in the language set in the iPod.
 

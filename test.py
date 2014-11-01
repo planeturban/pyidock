@@ -133,5 +133,20 @@ while True:
         dock.switch_to_type(1, int(cmd.split()[1]))
         time.sleep(1)
         dock.execute_playlist_switch()
+    if cmd.startswith("print"):
+        type = int(cmd.split()[1])
+        count = dock.get_type_count(type)
+        i = 0
+        if count:
+            for row in dock.get_type_range(type, count):
+                print "%5d: %s" % (i, row)
+                i+=1
+        else:
+            print "Nothing here!"
+    if cmd.startswith("gsi"):
+        item = int(cmd.split()[1])
+        print "Title: %s. Album: %s. Artist: %s" % (dock.get_song_title(item), dock.get_song_album(item),
+                                                    dock.get_song_artist(item))
+
     execute_time = time.time() - cmd_start
     time.sleep(.1)

@@ -11,86 +11,58 @@ from os import system
 #system("clear")
 
 print "Init."
-playlist = []
-artist = []
-album = []
-genre = []
-song = []
-composer = []
+start = time.time()
 
-dock = PyiDock()
+dock = PyiDock(serialspeed=57600)
 dock.connect()
 dock.set_playlist_to_all()
 
-start = time.time()
-playlists = dock.get_type_count(1)
-artists = dock.get_type_count(2)
-albums = dock.get_type_count(3)
-genres = dock.get_type_count(4)
-songs = dock.get_type_count(5)
-composers = dock.get_type_count(6)
-"""
-print "Playlists"
-for i in range(0, playlists , 1):
-    playlist.append(dock.get_type_range(1, 1, i))
-print "Artists"
-for i in range(0, artists, 1):
-    artist.append(dock.get_type_range(2, 1, i))
-print "Albums"
-for i in range(0, albums, 1):
-    album.append(dock.get_type_range(3, 1, i))
-print "Genres"
-for i in range(0, genres, 1):
-    genre.append(dock.get_type_range(4, 1, i))
-print "Songs"
-for i in range(0, songs, 1):
-    song.append(dock.get_type_range(5, 1, i))
-"""
+def index():
+    c = dock.get_type_count(0)  # I know there are 12, now.
+    strings = dock.get_type_range(0, c)
+    strings[0] = "Name"
+    ipodname = dock.get_ipod_name()
+    i = 0
+    info = {}
+    for s in strings:
+        if i:
+            info[i] = {'string': s, 'data': dock.get_type_count(i)}
+        else:
+            info[0] = {'string': "Name", 'data': ipodname}
+        i+=1
+    return info
 
 
+info = index()
 print "Init done."
 print "%f" % (time.time() - start)
 
 def printstatus():
 
     print "iPod information"
+    print "% 15s: %16s" % (info[0]['string'], info[0]['data'])
+    for i in range(1, len(info), 1):
+        print "% 15s: %16d" % (info[i]['string'], info[i]['data'])
     start = time.time();
-    ipodname = dock.get_ipod_name()
-    print "Name:%14s (%f)" % (ipodname, (time.time() - start))
+    print "----------------"
+    print "Playlists:"
     start = time.time();
-    songs = dock.get_type_count(5)
-    print "Songs:% 13d (%f)" % (songs, (time.time() - start))
-    start = time.time();
-    artists = dock.get_type_count(2)
-    print "Artists:% 11d (%f)" % (artists, (time.time() - start))
-    start = time.time();
-    print "Audiobooks:% 12d" % dock.get_type_count(7)
-    print "Podcasts:% 12d" % dock.get_type_count(8)
-    print "9:% 12d" % dock.get_type_count(9)
-
-    start = time.time();
-    albums = dock.get_type_count(3)
-    print "Albums:% 12d (%f)" % (albums, (time.time() - start))
-    start = time.time();
-    playlists = dock.get_type_count(1)
-    print "Playlists:% 9d (%f)" % (playlists, (time.time() - start))
-    pls = []
-    start = time.time();
-    for i in range(0, playlists , 1):
-        pls.append(dock.get_type_range(1, 1, i))
-    end = time.time() - start;
     i = 0;
-    for pl in pls:
+    start = time.time();
+    for pl in dock.get_type_range(1, info[1]['data']):
         print "           [%d] %s" % (i, pl)
         i += 1
+    end = time.time() - start;
     print "           (%f)" % end
-    start = time.time();
-    genres = dock.get_type_count(4)
-    print "Genres:% 12d (%f)" % (genres, (time.time() - start))
+
+
     start = time.time();
     playlistsongs = dock.get_playlist_songs()
     print "Songs in pl: % 6d (%f)" % (playlistsongs, (time.time() - start))
     print "----------------"
+
+
+
     start = time.time();
     shuffle = dock.get_shuffle()
     print "Shuffle:% 11s (%f)" % (shuffle, (time.time() - start))
@@ -131,6 +103,7 @@ while True:
         print "Time spent executing: %f" % execute_time
     cmd = raw_input("Command: ")
 #    system("clear")
+
     cmd_start = time.time()
     if cmd == "play":
         if dock.get_time_and_status()['status'] == "stop":

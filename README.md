@@ -1,10 +1,27 @@
-pyidoc
-==============
+# PyiDock
 
 Class for controlling iPod in air mode.
 AAP documentation at https://nuxx.net/wiki/Apple_Accessory_Protocol
 
-Circut:
+## Sample code
+
+```python
+from pyidock import PyiDock
+from time import time
+
+start = time()
+dock = PyiDock()
+dock.connect()
+numberOfSongs = int(dock.get_type_count(5))  # type 5 is songs.
+songs = dock.get_type_range(5, numberOfSongs, 0)
+dock.disconnect()
+end = time()
+avg = (end - start) / len(songs)
+
+print "%d songs in %f. %f average per song." % ( len(songs), (end - start)
+```
+
+## Circut
 ```
 +5V ---------+                                                           #
              |                                                           #
@@ -32,3 +49,6 @@ GND ---------+
 TX/RX on 13/12
 
 Charging works with 6th gen ipod nano but not 7th gen ipod classic (120GB).
+
+
+

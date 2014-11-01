@@ -18,7 +18,7 @@ dock.disconnect()
 end = time()
 avg = (end - start) / len(songs)
 
-print "%d songs in %f. %f average per song." % ( len(songs), (end - start)
+print "%d songs in %f. %f average per song." % ( len(songs), (end - start), avg)
 ```
 
 ## Circut

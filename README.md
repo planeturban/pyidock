@@ -5,6 +5,7 @@ AAP documentation at https://nuxx.net/wiki/Apple_Accessory_Protocol
 
 ## Sample code
 
+### List all songs on iPod
 ```python
 from pyidock import PyiDock
 from time import time
@@ -21,6 +22,32 @@ avg = (end - start) / len(songs)
 
 print "%d songs in %f. %f average per song." % ( len(songs), (end - start), avg)
 ```
+
+### Simple CherryPy web server
+
+Play/pause by accessing http://localhost:8080/play
+
+```python
+import cherrypy
+from pyidock import PyiDock
+
+dock = PyiDock()
+dock.connect()
+
+class StringGenerator(object):
+    @cherrypy.expose
+    def index(self):
+        return "PyiDock web example"
+
+    @cherrypy.expose
+    def play(self):
+        dock.play()
+        return ""
+
+if __name__ == '__main__':
+    cherrypy.quickstart(StringGenerator())
+```
+
 
 ## Circut
 ```
@@ -63,7 +90,7 @@ Charging works with 6th gen ipod nano but not 7th gen ipod classic (120GB).
     6: Composers
     7: Audiobooks
     8: Podcasts
-    9: Nested Playlist aka Smart Playlist
+    9: Nested Playlist (aka Smart Playlist)
     10: Genius Mixes
     11: iTunes U
 Calling `PyiDock.get_type_range(0, PyiDock.get_type_count(0))` will return this list in the language set in the iPod.

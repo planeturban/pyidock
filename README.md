@@ -76,7 +76,7 @@ GND ---------+
 
 TX/RX on 13/12
 
-Charging works with 6th gen ipod nano but not 7th gen ipod classic (120GB).
+Charging works with 6th gen ipod nano and iPhone 4S but not 7th gen ipod classic (120GB).
 
 ## Useful information
 

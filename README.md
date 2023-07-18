@@ -1,7 +1,7 @@
 # PyiDock
 
 Class for controlling iPod in air mode.
-AAP documentation at https://nuxx.net/wiki/Apple_Accessory_Protocol
+AAP documentation at https://nuxx.net/wiki_archive/A/Apple_Accessory_Protocol
 
 ## Sample code
 
